@@ -19,17 +19,29 @@
 
 #pragma once
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+#include <IWarning.hpp>
 
-enum class PlayerClassHooks : std::uint16_t
+#include <anubis/observer_ptr.hpp>
+
+namespace sql
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
+    class SQLWarning;
+}
 
-extern LuaAdapterCFunction gClassNatives[];
+namespace Luna::MDBSQL
+{
+    class Warning final : public IWarning
+    {
+    public:
+        explicit Warning(nstd::observer_ptr<sql::SQLWarning> warning);
+        ~Warning() final = default;
+
+        std::unique_ptr<IWarning> getNextWarning() const final;
+        std::string_view getSQLState() const final;
+        std::int32_t getErrorCode() const final;
+        std::string_view getMessage() const final;
+
+    private:
+        std::unique_ptr<sql::SQLWarning> m_warning;
+    };
+}

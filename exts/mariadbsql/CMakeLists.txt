@@ -1,47 +1,42 @@
-project(luna)
+project(mariadbsql)
 
 string(TIMESTAMP CURRENT_YEAR %Y)
-set(LUNA_RELEASE_MODE ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_BUILD_TYPE})
+set(ANUBIS_RELEASE_MODE ${CMAKE_CXX_COMPILER_ID} ${CMAKE_CXX_COMPILER_VERSION} ${CMAKE_BUILD_TYPE})
 
-# Generate LunaInfo.hpp
+# Generate info
 find_program(GIT git)
 if (GIT AND EXISTS "${CMAKE_SOURCE_DIR}/.git")
     execute_process(COMMAND ${GIT} rev-parse --short HEAD OUTPUT_VARIABLE COMMIT OUTPUT_STRIP_TRAILING_WHITESPACE)
-    configure_file(LunaInfo.hpp.in LunaInfo.hpp @ONLY)
+    configure_file(SQLInfo.hpp.in SQLInfo.hpp @ONLY)
 else ()
     set(COMMIT "<unknown>")
-    configure_file(LunaInfo.hpp.in LunaInfo.hpp @ONLY)
+    configure_file(SQLInfo.hpp.in SQLInfo.hpp @ONLY)
 endif ()
 
 set(SRC_FILES
-        AnubisExports.cpp
-        PluginSystem.cpp
-        BasicNatives.cpp
-        EdictNatives.cpp
-        ClassNatives.cpp
-        ClassHandler.cpp
-        ExtSystem.cpp
-        sql/Natives.cpp)
+        LunaExports.cpp
+        Driver.cpp
+        Connection.cpp
+        Statement.cpp
+        PreparedStatement.cpp
+        ResultSet.cpp
+        Warning.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
 
 target_include_directories(${PROJECT_NAME}
         SYSTEM
         PRIVATE
-        ${CMAKE_BINARY_DIR}/luna
-        ${YAML_CPP_INCLUDE_DIR}
+        ${SQL_CPP_INCLUDE_DIR}
+        ${CMAKE_BINARY_DIR}/exts/mariadbsql
         ${FMT_INCLUDE_DIR}
-        ${CMAKE_SOURCE_DIR}/deps/anubis
         ${CMAKE_SOURCE_DIR}/public
-        ${LUA_INCLUDE_DIR}
-        ${DEPS_INCLUDE_DIR})
+        ${CMAKE_SOURCE_DIR}/public/mariadbsql)
 
 target_include_directories(${PROJECT_NAME}
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
         )
-
-target_compile_definitions(${PROJECT_NAME} PRIVATE LUNA_CORE)
 
 if (UNIX)
     target_link_options(${PROJECT_NAME} PRIVATE -m32 -Wl,--disable-new-dtags)
@@ -62,32 +57,13 @@ set_target_properties(${PROJECT_NAME}
         VISIBILITY_INLINES_HIDDEN ON
         CXX_VISIBILITY_PRESET hidden)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE ${YAML_CPP_LIBRARIES} ${FMT_LIBRARIES} lua_static)
-add_dependencies(${PROJECT_NAME} ${YAML_CPP_LIBRARIES} ${FMT_LIBRARIES} lua_shared)
-
-#add_subdirectory(sql)
+target_link_libraries(${PROJECT_NAME} PRIVATE ${FMT_LIBRARIES})
+add_dependencies(${PROJECT_NAME} ${FMT_LIBRARIES})
 
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin/dlls
         LIBRARY DESTINATION bin/dlls
         )
-
-#install(
-#        DIRECTORY ${CMAKE_SOURCE_DIR}/configs
-#        DESTINATION bin
-#)
-
-install(
-        FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
-        DESTINATION bin/lib
-)
-
-#SDK
-install(
-        DIRECTORY ${CMAKE_SOURCE_DIR}/public/
-        DESTINATION sdk/include/luna
-        FILES_MATCHING PATTERN "*.hpp"
-)
 
 # TODO: Come up with better solution than just hardcoding paths
 if (IS_CLANG_COMPILER)

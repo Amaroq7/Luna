@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *
@@ -21,7 +21,7 @@
 
 constexpr const char *APP_COMMIT_SHA = "@COMMIT@";
 constexpr const char *LUNA_VERSION = "@CMAKE_PROJECT_VERSION@";
-constexpr const char *LUNA_RELEASE_MODE = "@ANUBIS_RELEASE_MODE@";
+constexpr const char *LUNA_RELEASE_MODE = "@LUNA_RELEASE_MODE@";
 constexpr const char *LUNA_HOMEPAGE = "@CMAKE_PROJECT_HOMEPAGE_URL@";
 constexpr const char *LUNA_NAME = "@CMAKE_PROJECT_NAME@";
 constexpr const char *LUNA_AUTHOR = "Karol Szuster";

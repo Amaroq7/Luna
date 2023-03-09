@@ -9,8 +9,8 @@ FetchContent_Declare(
         GIT_SHALLOW ON
 )
 
-set(FMT_DOC OFF CACHE INTERNAL "")
-set(FMT_TEST OFF CACHE INTERNAL "")
+set(FMT_DOC OFF)
+set(FMT_TEST OFF)
 
 FetchContent_MakeAvailable(fmtlib)
 

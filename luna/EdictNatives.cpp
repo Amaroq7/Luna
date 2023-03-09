@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *
@@ -21,6 +21,102 @@
 #include <observer_ptr.hpp>
 #include <engine/IEdict.hpp>
 #include "AnubisExports.hpp"
+
+static int setModel(lua_State *L)
+{
+    auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
+
+    size_t length;
+    const char *model = luaL_checklstring(L, 2, &length);
+
+    std::string_view staticModel = gEngine->getString(
+        gEngine->allocString(model, Anubis::FuncCallType::Direct),
+        Anubis::FuncCallType::Direct
+    );
+
+    gEngine->setModel(edict, staticModel, Anubis::FuncCallType::Direct);
+
+    return 0;
+}
+
+static int setOrigin(lua_State *L)
+{
+    auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
+
+    auto x = static_cast<float>(lua_tonumber(L, 2));
+    auto y = static_cast<float>(lua_tonumber(L, 3));
+    auto z = static_cast<float>(lua_tonumber(L, 4));
+
+    gEngine->setOrigin(edict, { x, y, z }, Anubis::FuncCallType::Direct);
+
+    return 0;
+}
+
+static int setSize(lua_State *L)
+{
+    auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
+
+    auto minX = static_cast<float>(lua_tonumber(L, 2));
+    auto minY = static_cast<float>(lua_tonumber(L, 3));
+    auto minZ = static_cast<float>(lua_tonumber(L, 4));
+
+    auto maxX = static_cast<float>(lua_tonumber(L, 5));
+    auto maxY = static_cast<float>(lua_tonumber(L, 6));
+    auto maxZ = static_cast<float>(lua_tonumber(L, 7));
+
+    gEngine->setSize(edict, { minX, minY, minZ }, { maxX, maxY, maxZ }, Anubis::FuncCallType::Direct);
+
+    return 0;
+}
+
+static int createEntity(lua_State *L)
+{
+    auto edict = gEngine->createEntity(Anubis::FuncCallType::Direct);
+
+    if (!edict)
+    {
+        lua_pushnil(L);
+    }
+    else
+    {
+        lua_pushlightuserdata(L, edict.get());
+    }
+
+    return 1;
+}
+
+static int removeEntity(lua_State *L)
+{
+    auto edict = gEngine->createEntity(Anubis::FuncCallType::Direct);
+    if (!edict)
+    {
+        return 0;
+    }
+
+    gEngine->removeEntity(edict, Anubis::FuncCallType::Direct);
+    return 0;
+}
+
+static int createNamedEntity(lua_State *L)
+{
+    size_t length;
+    const char *name = luaL_checklstring(L, 1, &length);
+
+    Anubis::Engine::StringOffset className = gEngine->allocString(name, Anubis::FuncCallType::Direct);
+
+    auto edict = gEngine->createNamedEntity(className, Anubis::FuncCallType::Direct);
+
+    if (!edict)
+    {
+        lua_pushnil(L);
+    }
+    else
+    {
+        lua_pushlightuserdata(L, edict.get());
+    }
+
+    return 1;
+}
 
 static int setFloatProperty(lua_State *L)
 {
@@ -370,6 +466,13 @@ static int setSpawnFlag(lua_State *L)
 }
 
 LuaAdapterCFunction gEdictNatives[] = {
+    {"setModel", setModel},
+    {"setOrigin", setOrigin},
+    {"setSize", setSize},
+    {"createEntity", createEntity},
+    {"removeEntity", removeEntity},
+    {"createNamedEntity", createNamedEntity},
+
     {"setFloatProperty", setFloatProperty},
     {"setIntProperty", setIntProperty},
     {"setVecProperty", setVecProperty},

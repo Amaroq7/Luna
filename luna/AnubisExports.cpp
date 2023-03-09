@@ -19,6 +19,7 @@
 
 #include "AnubisExports.hpp"
 #include "PluginSystem.hpp"
+#include "ExtSystem.hpp"
 
 nstd::observer_ptr<Anubis::IAnubis> gAnubisApi;
 nstd::observer_ptr<Anubis::Game::ILibrary> gGame;
@@ -26,6 +27,26 @@ nstd::observer_ptr<Anubis::Engine::ILibrary> gEngine;
 std::unique_ptr<Anubis::ILogger> gLogger;
 std::unique_ptr<Luna::AnubisPlugin> gPluginInfo;
 std::unique_ptr<Luna::PluginSystem> gPluginSystem;
+
+namespace
+{
+    void loadExts()
+    {
+        std::filesystem::path extsPath {gPluginInfo->getPath().parent_path().parent_path() / "exts"};
+
+        for (const auto &entry : std::filesystem::directory_iterator{extsPath})
+        {
+            if (!entry.is_regular_file())
+            {
+                continue;
+            }
+
+            const auto &path = entry.path();
+
+            gExtList.emplace_back(path);
+        }
+    }
+}
 
 namespace Anubis
 {
@@ -49,6 +70,7 @@ namespace Anubis
         gLogger->setLogTag("LUNA");
         gLogger->setLogLevel(LogLevel::Debug);
 
+        loadExts();
         gPluginSystem = std::make_unique<Luna::PluginSystem>();
 
         return true;

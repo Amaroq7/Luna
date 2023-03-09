@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *
@@ -22,6 +22,7 @@
 #include "BasicNatives.hpp"
 #include "EdictNatives.hpp"
 #include "ClassNatives.hpp"
+#include "sql/Natives.hpp"
 
 #include <fmt/format.h>
 
@@ -50,6 +51,12 @@ namespace Luna
             {
                 lua_register(m_luaState.get(), gClassNatives[i].name, gClassNatives[i].func);
             } while (gClassNatives[++i].func);
+
+            i = 0;
+            do
+            {
+                lua_register(m_luaState.get(), gSQLNatives[i].name, gSQLNatives[i].func);
+            } while (gSQLNatives[++i].func);
 
             if (lua_getglobal(m_luaState.get(), "maxClients") != LUA_TNIL)
             {

@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *

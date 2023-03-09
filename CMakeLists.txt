@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.17)
 
+set(CMAKE_POLICY_DEFAULT_CMP0048 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
+set(CMAKE_POLICY_DEFAULT_CMP0126 NEW)
+
 project(Luna
         VERSION 1.0.0
         DESCRIPTION "HL1 Lua Plugin Manager"
@@ -9,8 +15,8 @@ project(Luna
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-set(CMAKE_POLICY_DEFAULT_CMP0069 NEW)
-set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
+
+set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS ON)
 
 if (WIN32)
     if (NOT CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
@@ -41,7 +47,9 @@ endif ()
 include(cmake/BuildFMT.cmake)
 include(cmake/BuildYAML.cmake)
 include(cmake/BuildLua.cmake)
+include(cmake/BuildSQL.cmake)
 
 set(DEPS_INCLUDE_DIR deps)
 
 add_subdirectory(luna)
+add_subdirectory(exts/mariadbsql)

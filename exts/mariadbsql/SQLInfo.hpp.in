@@ -19,17 +19,10 @@
 
 #pragma once
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
-
-enum class PlayerClassHooks : std::uint16_t
-{
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
-
-extern LuaAdapterCFunction gClassNatives[];
+constexpr const char *APP_COMMIT_SHA = "@COMMIT@";
+constexpr const char *LUNA_VERSION = "@CMAKE_PROJECT_VERSION@";
+constexpr const char *SQL_RELEASE_MODE = "@SQL_RELEASE_MODE@";
+constexpr const char *SQL_HOMEPAGE = "@CMAKE_PROJECT_HOMEPAGE_URL@";
+constexpr const char *SQL_NAME = "@CMAKE_PROJECT_NAME@";
+constexpr const char *SQL_AUTHOR = "Karol Szuster";
+constexpr const char *CURRENT_YEAR = "@CURRENT_YEAR@";

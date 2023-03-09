@@ -19,17 +19,27 @@
 
 #pragma once
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+#include <IConnection.hpp>
 
-enum class PlayerClassHooks : std::uint16_t
+#include <anubis/observer_ptr.hpp>
+
+namespace sql
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
+    class Connection;
+}
 
-extern LuaAdapterCFunction gClassNatives[];
+namespace Luna::MDBSQL
+{
+    class Connection final : public IConnection
+    {
+    public:
+        explicit Connection(nstd::observer_ptr<sql::Connection> connection);
+        ~Connection() final = default;
+
+        std::unique_ptr<IStatement> createStatement() final;
+        std::unique_ptr<IPreparedStatement> prepareStatement(std::string_view sql) final;
+
+    private:
+        std::unique_ptr<sql::Connection> m_connection;
+    };
+}

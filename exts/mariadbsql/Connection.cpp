@@ -17,19 +17,22 @@
  *  along with Luna.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Connection.hpp"
+#include "PreparedStatement.hpp"
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+#include <conncpp.hpp>
 
-enum class PlayerClassHooks : std::uint16_t
+namespace Luna::MDBSQL
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
+    Connection::Connection(nstd::observer_ptr<sql::Connection> connection) : m_connection(connection.get()) {}
 
-extern LuaAdapterCFunction gClassNatives[];
+    std::unique_ptr<IStatement> Connection::createStatement()
+    {
+        return std::make_unique<Statement>(m_connection->createStatement());
+    }
+
+    std::unique_ptr<IPreparedStatement> Connection::prepareStatement(std::string_view sql)
+    {
+        return std::make_unique<PreparedStatement>(m_connection->prepareStatement(sql.data()));
+    }
+}

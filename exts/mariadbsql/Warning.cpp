@@ -17,19 +17,33 @@
  *  along with Luna.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "Warning.hpp"
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+#include <conncpp.hpp>
 
-enum class PlayerClassHooks : std::uint16_t
+namespace Luna::MDBSQL
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
+    Warning::Warning(nstd::observer_ptr<sql::SQLWarning> warning)
+    : m_warning(warning.get())
+    {}
 
-extern LuaAdapterCFunction gClassNatives[];
+    std::unique_ptr<IWarning> Warning::getNextWarning() const
+    {
+        return std::make_unique<Warning>(m_warning->getNextWarning());
+    }
+
+    std::string_view Warning::getSQLState() const
+    {
+        return m_warning->getSQLState().c_str();
+    }
+
+    std::int32_t Warning::getErrorCode() const
+    {
+        return m_warning->getErrorCode();
+    }
+
+    std::string_view Warning::getMessage() const
+    {
+        return m_warning->getMessage().c_str();
+    }
+}

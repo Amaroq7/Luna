@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *
@@ -124,7 +124,6 @@ static int playerClassFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(player);
                     }
 
@@ -133,7 +132,6 @@ static int playerClassFnHook(lua_State *L)
 
                     if (lua_pcall(L, 2, 0, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(player);
                     }
                 },
@@ -153,7 +151,6 @@ static int playerClassFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(player, inflictor, attacker, dmg, dmgType);
                     }
 
@@ -168,7 +165,6 @@ static int playerClassFnHook(lua_State *L)
 
                     if (lua_pcall(L, 6, 1, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(player, inflictor, attacker, dmg, dmgType);
                     }
 
@@ -189,7 +185,6 @@ static int playerClassFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(player, attacker, flDamage, vecDir, tr, dmgType);
                     }
 
@@ -203,7 +198,6 @@ static int playerClassFnHook(lua_State *L)
 
                     if (lua_pcall(L, 7, 0, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(player, attacker, flDamage, vecDir, tr, dmgType);
                     }
                 }, hookPriority);
@@ -219,7 +213,6 @@ static int playerClassFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(player, attacker, gibType);
                     }
 
@@ -230,7 +223,6 @@ static int playerClassFnHook(lua_State *L)
 
                     if (lua_pcall(L, 4, 0, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(player, attacker, gibType);
                     }
                 }, hookPriority);
@@ -248,7 +240,6 @@ static int playerClassFnHook(lua_State *L)
 static int playerClassFnUnhook(lua_State *L)
 {
     auto type = static_cast<PlayerClassHooks>(luaL_checkinteger(L, 1));
-    auto t = L ? gGame->getCBasePlayerHooks()->spawn() : gGame->getCBasePlayerHooks()->takeDamage();
 
     switch (type)
     {

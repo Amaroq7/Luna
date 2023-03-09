@@ -19,17 +19,6 @@
 
 #pragma once
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+#include "../CommonNatives.hpp"
 
-enum class PlayerClassHooks : std::uint16_t
-{
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
-
-extern LuaAdapterCFunction gClassNatives[];
+extern LuaAdapterCFunction gSQLNatives[];

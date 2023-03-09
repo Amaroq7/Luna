@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2013 Karol Szuster
+ *  Copyright (C) 2023 Karol Szuster
  *
  *  This file is part of Luna.
  *
@@ -147,7 +147,6 @@ static int gameFnHook(lua_State *L)
                  {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(pEdict, name, ip, reason);
                     }
 
@@ -160,13 +159,11 @@ static int gameFnHook(lua_State *L)
 
                     if (lua_pcall(L, 5, 1, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(pEdict, name, ip, reason);
                     }
 
                     if (!lua_isboolean(L, -1))
                     {
-                        luaL_error(L, "Function %s must return boolean", fName.c_str());
                         return hook->callNext(pEdict, name, ip, reason);
                     }
 
@@ -186,7 +183,6 @@ static int gameFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(pEdict);
                     }
 
@@ -195,7 +191,6 @@ static int gameFnHook(lua_State *L)
 
                     if (lua_pcall(L, 2, 0, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(pEdict);
                     }
                 }, hookPriority);
@@ -211,7 +206,6 @@ static int gameFnHook(lua_State *L)
                 {
                     if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
                     {
-                        luaL_error(L, "Function %s does not exist", fName.c_str());
                         return hook->callNext(pEdict, infoBuffer);
                     }
 
@@ -221,7 +215,6 @@ static int gameFnHook(lua_State *L)
 
                     if (lua_pcall(L, 3, 0, 0) != LUA_OK)
                     {
-                        luaL_error(L, "Cannot call %s function", fName.c_str());
                         return hook->callNext(pEdict, infoBuffer);
                     }
                 }, hookPriority);
@@ -294,13 +287,11 @@ static int addSrvCommand(lua_State *L)
     const auto &[iter, inserted] = gSrvCommands.try_emplace(cmdName, [L, fName] {
          if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
          {
-             luaL_error(L, "Function %s not found", fName.c_str());
              return;
          }
 
          if (lua_pcall(L, 0, 0, 0) != LUA_OK)
          {
-             luaL_error(L, "Cannot call %s function", fName.c_str());
              return;
          }
     });

@@ -20,16 +20,18 @@
 #pragma once
 
 #include <cinttypes>
-#include "CommonNatives.hpp"
+#include <string>
+#include <memory>
 
-enum class PlayerClassHooks : std::uint16_t
+namespace Luna::MDBSQL
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
-
-extern LuaAdapterCFunction gClassNatives[];
+    class IWarning
+    {
+    public:
+        virtual ~IWarning() = default;
+        virtual std::unique_ptr<IWarning> getNextWarning() const = 0;
+        virtual std::string_view getSQLState() const = 0;
+        virtual std::int32_t getErrorCode() const = 0;
+        virtual std::string_view getMessage() const = 0;
+    };
+}

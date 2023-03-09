@@ -9,14 +9,14 @@ FetchContent_Declare(
         GIT_SHALLOW ON
 )
 
-set(YAML_CPP_BUILD_TESTS OFF CACHE INTERNAL "")
-set(YAML_CPP_BUILD_TOOLS OFF CACHE INTERNAL "")
-set(YAML_CPP_BUILD_CONTRIB OFF CACHE INTERNAL "")
-set(YAML_BUILD_SHARED_LIBS ON CACHE INTERNAL "")
-set(YAML_CPP_INSTALL OFF CACHE INTERNAL "")
+set(YAML_CPP_BUILD_TESTS OFF)
+set(YAML_CPP_BUILD_TOOLS OFF)
+set(YAML_CPP_BUILD_CONTRIB OFF)
+set(YAML_BUILD_SHARED_LIBS ON)
+set(YAML_CPP_INSTALL OFF)
 
 if (WIN32)
-    set(YAML_MSVC_SHARED_RT ON CACHE INTERNAL "")
+    set(YAML_MSVC_SHARED_RT ON)
 endif ()
 
 FetchContent_MakeAvailable(yamlcpp)
@@ -42,7 +42,6 @@ endif ()
 
 set(YAML_CPP_INCLUDE_DIR ${yamlcpp_SOURCE_DIR}/include)
 set(YAML_CPP_LIBRARIES yaml-cpp)
-set_property(GLOBAL PROPERTY FIND_LIBRARY_USE_LIB32_PATHS ON)
 
 set_target_properties(yaml-cpp
         PROPERTIES
@@ -52,8 +51,8 @@ set_target_properties(yaml-cpp
         INSTALL_RPATH $ORIGIN)
 
 install(TARGETS yaml-cpp
-        RUNTIME DESTINATION bin/lib
-        LIBRARY DESTINATION bin/lib)
+        RUNTIME DESTINATION lib
+        LIBRARY DESTINATION lib)
 
 #SDK
 install(TARGETS yaml-cpp

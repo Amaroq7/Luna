@@ -17,19 +17,29 @@
  *  along with Luna.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
+#include "LunaExports.hpp"
 
-#include <cinttypes>
-#include "CommonNatives.hpp"
+std::unique_ptr<Anubis::ILogger> gLogger;
+std::unique_ptr<Luna::IExt> gPluginInfo;
 
-enum class PlayerClassHooks : std::uint16_t
+namespace Luna
 {
-    Spawn = 0,
-    TakeDamage,
-    TraceAttack,
-    Killed,
-    GiveShield,
-    DropShield
-};
+    nstd::observer_ptr<IExt> Query()
+    {
+        gPluginInfo = std::make_unique<Extension>();
+        return gPluginInfo;
+    }
 
-extern LuaAdapterCFunction gClassNatives[];
+    bool Init(std::unique_ptr<Anubis::ILogger> &&logger)
+    {
+        gLogger = std::move(logger);
+        gLogger->setLogLevel(Anubis::LogLevel::Debug);
+
+        return true;
+    }
+
+    void Shutdown()
+    {
+        gLogger.reset();
+    }
+}
