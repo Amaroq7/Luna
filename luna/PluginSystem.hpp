@@ -56,6 +56,7 @@ namespace Luna
         ~Plugin();
 
         void allowVFuncHooks() const;
+        auto getState() const { return m_luaState; }
 
     private:
         PluginInfo m_pluginInfo{};
@@ -70,6 +71,8 @@ namespace Luna
 
         void unloadPlugins();
         void allowVFuncHooks() const;
+
+        [[nodiscard]] const auto &getPlugins() const { return m_plugins; }
 
     private:
         void _loadPlugins();

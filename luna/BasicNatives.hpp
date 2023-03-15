@@ -29,7 +29,9 @@ enum class GameHooks : std::uint16_t
 {
     ClientConnect = 0,
     ClientCmd,
-    ClientInfoChanged
+    ClientInfoChanged,
+    RoundEnd,
+    OnFreezeEnd
 };
 
 extern LuaAdapterCFunction gBasicNatives[];

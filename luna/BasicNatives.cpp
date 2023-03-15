@@ -22,6 +22,7 @@
 #include <game/IHooks.hpp>
 #include <engine/IEdict.hpp>
 #include <fmt/format.h>
+#include <game/cstrike/IHooks.hpp>
 #include "PluginSystem.hpp"
 
 #include <iostream>
@@ -221,6 +222,72 @@ static int gameFnHook(lua_State *L)
             break;
         }
 
+        case GameHooks::RoundEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                lua_pushnil(L);
+                return 1;
+            }
+
+            hookInfo = gGame->getHooks()->CSHooks()->roundEnd()->registerHook(
+                [L, fName]
+                (const nstd::observer_ptr<Anubis::Game::CStrike::IRoundEndHook> &hook, Anubis::Game::CStrike::WinStatus winStatus,
+                 Anubis::Game::CStrike::ScenarioEventEndRound event, float delay)
+                {
+                    if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
+                    {
+                        return hook->callNext(winStatus, event, delay);
+                    }
+
+                    lua_pushlightuserdata(L, hook.get());
+                    lua_pushinteger(L, static_cast<lua_Integer>(winStatus));
+                    lua_pushinteger(L, static_cast<lua_Integer>(event));
+                    lua_pushnumber(L, delay);
+
+                    if (lua_pcall(L, 4, 0, 0) != LUA_OK)
+                    {
+                        return hook->callNext(winStatus, event, delay);
+                    }
+
+                    if (!lua_isboolean(L, -1))
+                    {
+                        return hook->callNext(winStatus, event, delay);
+                    }
+
+                    bool result = lua_toboolean(L, -1);
+                    lua_pop(L, 1);
+
+                    return result;
+                }, hookPriority);
+            break;
+        }
+
+        case GameHooks::OnFreezeEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                lua_pushnil(L);
+                return 1;
+            }
+
+            hookInfo = gGame->getHooks()->CSHooks()->freezeTimeEnd()->registerHook(
+                [L, fName]
+                (const nstd::observer_ptr<Anubis::Game::CStrike::IRoundFreezeEndHook> &hook)
+                {
+                    if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
+                    {
+                        return hook->callNext();
+                    }
+
+                    if (lua_pcall(L, 0, 0, 0) != LUA_OK)
+                    {
+                        return hook->callNext();
+                    }
+                }, hookPriority);
+            break;
+        }
+
         default:
             break;
     }
@@ -251,6 +318,18 @@ static int gameFnUnhook(lua_State *L)
         {
             auto hookInfo = reinterpret_cast<Anubis::IHookInfo *>(lua_touserdata(L, 2));
             gGame->getHooks()->clientInfoChanged()->unregisterHook(hookInfo);
+            break;
+        }
+        case GameHooks::RoundEnd:
+        {
+            auto hookInfo = reinterpret_cast<Anubis::IHookInfo *>(lua_touserdata(L, 2));
+            gGame->getHooks()->CSHooks()->roundEnd()->unregisterHook(hookInfo);
+            break;
+        }
+        case GameHooks::OnFreezeEnd:
+        {
+            auto hookInfo = reinterpret_cast<Anubis::IHookInfo *>(lua_touserdata(L, 2));
+            gGame->getHooks()->CSHooks()->freezeTimeEnd()->unregisterHook(hookInfo);
             break;
         }
 
@@ -369,6 +448,61 @@ static int clientPrint(lua_State *L)
     return 0;
 }
 
+static int execFunc(lua_State *L)
+{
+    size_t length;
+    const char *name = luaL_checklstring(L, 1, &length);
+
+    lua_pop(L, 1);
+
+    int paramsNum = lua_gettop(L);
+
+    for (const auto &plugin : gPluginSystem->getPlugins())
+    {
+        lua_State *otherPl = plugin->getState().get();
+
+        if (lua_getglobal(otherPl, name) == LUA_TNIL)
+        {
+            continue;
+        }
+
+        for (int i = 1; i <= paramsNum; i++)
+        {
+            switch (lua_type(L, i))
+            {
+                case LUA_TNIL:
+                {
+                    lua_pushnil(otherPl);
+                    break;
+                }
+                case LUA_TBOOLEAN:
+                {
+                    lua_pushboolean(otherPl, lua_toboolean(L, i));
+                    break;
+                }
+                case LUA_TNUMBER:
+                {
+                    lua_pushnumber(otherPl, lua_tonumber(L, i));
+                    break;
+                }
+                case LUA_TSTRING:
+                {
+                    size_t len;
+                    const char *str = lua_tolstring(L, i, &len);
+                    lua_pushlstring(otherPl, str, len);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        lua_pcall(otherPl, paramsNum, 0, 0);
+    }
+
+    return 0;
+}
+
 LuaAdapterCFunction gBasicNatives[] = {
     {"enginePrint", enginePrint},
     {"gameFnHook", gameFnHook},
@@ -382,5 +516,6 @@ LuaAdapterCFunction gBasicNatives[] = {
     {"cmdArgs", cmdArgs},
     {"infoKeyValue", infoKeyValue},
     {"clientPrint", clientPrint},
+    {"execFunc", execFunc},
     {nullptr, nullptr}
 };
