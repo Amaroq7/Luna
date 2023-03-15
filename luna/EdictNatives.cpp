@@ -22,6 +22,9 @@
 #include <engine/IEdict.hpp>
 #include "AnubisExports.hpp"
 
+#include <array>
+#include <cstddef>
+
 static int setModel(lua_State *L)
 {
     auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
@@ -87,13 +90,12 @@ static int createEntity(lua_State *L)
 
 static int removeEntity(lua_State *L)
 {
-    auto edict = gEngine->createEntity(Anubis::FuncCallType::Direct);
-    if (!edict)
+    auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
+    if (edict)
     {
-        return 0;
+        gEngine->removeEntity(edict, Anubis::FuncCallType::Direct);
     }
 
-    gEngine->removeEntity(edict, Anubis::FuncCallType::Direct);
     return 0;
 }
 
