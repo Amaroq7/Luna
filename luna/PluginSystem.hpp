@@ -67,7 +67,7 @@ namespace Luna
     class PluginSystem
     {
     public:
-        PluginSystem();
+        PluginSystem(std::string_view dirName);
 
         void unloadPlugins();
         void allowVFuncHooks() const;
@@ -75,7 +75,7 @@ namespace Luna
         [[nodiscard]] const auto &getPlugins() const { return m_plugins; }
 
     private:
-        void _loadPlugins();
+        void _loadPlugins(std::string_view dirName);
         [[nodiscard]] std::pair<PluginInfo, bool> _readPluginInfo(const std::filesystem::path &path,
                                                                   nstd::observer_ptr<lua_State> luaState) const;
 

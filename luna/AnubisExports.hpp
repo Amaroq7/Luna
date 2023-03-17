@@ -29,6 +29,7 @@
 #include <ILogger.hpp>
 #include <game/ILibrary.hpp>
 #include <engine/ILibrary.hpp>
+#include <game/IHooks.hpp>
 
 extern nstd::observer_ptr<Anubis::IAnubis> gAnubisApi;
 extern nstd::observer_ptr<Anubis::Game::ILibrary> gGame;

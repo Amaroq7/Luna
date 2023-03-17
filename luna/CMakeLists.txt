@@ -21,6 +21,8 @@ set(SRC_FILES
         ClassNatives.cpp
         ClassHandler.cpp
         ExtSystem.cpp
+        TimerSystem.cpp
+        ConfigSystem.cpp
         sql/Natives.cpp)
 
 add_library(${PROJECT_NAME} MODULE ${SRC_FILES})
@@ -72,10 +74,10 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION bin/dlls
         )
 
-#install(
-#        DIRECTORY ${CMAKE_SOURCE_DIR}/configs
-#        DESTINATION bin
-#)
+install(
+        DIRECTORY ${CMAKE_SOURCE_DIR}/configs
+        DESTINATION bin
+)
 
 install(
         FILES ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}

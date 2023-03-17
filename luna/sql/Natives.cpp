@@ -199,9 +199,19 @@ static int executeStatement(lua_State *L)
     }
     else
     {
-        size_t length;
-        const char *sql = luaL_tolstring(L, 2, &length);
-        lua_pushboolean(L, stmt->execute(sql));
+        const char *sql = nullptr;
+        Luna::MDBSQL::IPreparedStatement *pStmt = nullptr;
+        if (lua_gettop(L) == 2)
+        {
+            size_t length;
+            sql = luaL_tolstring(L, 2, &length);
+        }
+        else
+        {
+            pStmt = dynamic_cast<Luna::MDBSQL::IPreparedStatement *>(stmt);
+        }
+
+        lua_pushboolean(L, sql ? stmt->execute(sql) : pStmt->execute());
     }
 
     return 1;
@@ -217,9 +227,20 @@ static int executeQueryStatement(lua_State *L)
     }
     else
     {
-        size_t length;
-        const char *sql = luaL_tolstring(L, 2, &length);
-        if (auto resultSet = stmt->executeQuery(sql); resultSet)
+        const char *sql = nullptr;
+        Luna::MDBSQL::IPreparedStatement *pStmt = nullptr;
+        if (lua_gettop(L) == 2)
+        {
+            size_t length;
+            sql = luaL_tolstring(L, 2, &length);
+        }
+        else
+        {
+            pStmt = dynamic_cast<Luna::MDBSQL::IPreparedStatement *>(stmt);
+        }
+
+
+        if (auto resultSet = (sql ? stmt->executeQuery(sql) : pStmt->executeQuery()); resultSet)
         {
             auto &result = gResultSets.emplace_back(std::move(resultSet));
             lua_pushlightuserdata(L, result.get());
@@ -243,9 +264,20 @@ static int executeUpdateStatementInternal(lua_State *L, bool large)
     }
     else
     {
-        size_t length;
-        const char *sql = luaL_tolstring(L, 2, &length);
-        if (auto result = (!large) ? stmt->executeUpdate(sql) : stmt->executeLargeUpdate(sql); result)
+        const char *sql = nullptr;
+        Luna::MDBSQL::IPreparedStatement *pStmt = nullptr;
+        if (lua_gettop(L) == 2)
+        {
+            size_t length;
+            sql = luaL_tolstring(L, 2, &length);
+        }
+        else
+        {
+            pStmt = dynamic_cast<Luna::MDBSQL::IPreparedStatement *>(stmt);
+        }
+
+        if (auto result = (!large) ? (sql ? stmt->executeUpdate(sql) : pStmt->executeUpdate())
+                                   : (sql ? stmt->executeLargeUpdate(sql) : pStmt->executeLargeUpdate()); result)
         {
             lua_pushinteger(L, result);
         }

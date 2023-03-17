@@ -89,9 +89,9 @@ namespace Luna
         }
     }
 
-    PluginSystem::PluginSystem()
+    PluginSystem::PluginSystem(std::string_view dirName)
     {
-        _loadPlugins();
+        _loadPlugins(dirName);
     }
 
     void PluginSystem::unloadPlugins()
@@ -99,9 +99,9 @@ namespace Luna
         m_plugins.clear();
     }
 
-    void PluginSystem::_loadPlugins()
+    void PluginSystem::_loadPlugins(std::string_view dirName)
     {
-        std::filesystem::path pluginsPath {gPluginInfo->getPath().parent_path().parent_path() / "plugins"};
+        std::filesystem::path pluginsPath {gPluginInfo->getPath().parent_path().parent_path() / dirName};
 
         for (const auto &entry : std::filesystem::directory_iterator{pluginsPath})
         {

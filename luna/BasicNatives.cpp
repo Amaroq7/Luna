@@ -24,8 +24,7 @@
 #include <fmt/format.h>
 #include <game/cstrike/IHooks.hpp>
 #include "PluginSystem.hpp"
-
-#include <iostream>
+#include "TimerSystem.hpp"
 
 #include <functional>
 #include <unordered_map>
@@ -79,6 +78,31 @@ static int callNext(lua_State *L)
             hook->callNext(edict, *infoBuffer);
             break;
         }
+        case GameHooks::RoundEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                return 0;
+            }
+
+            auto hook = reinterpret_cast<Anubis::Game::CStrike::IRoundEndHook *>(lua_touserdata(L, 2));
+            auto winStatus = static_cast<Anubis::Game::CStrike::WinStatus>(lua_tointeger(L, 3));
+            auto event = static_cast<Anubis::Game::CStrike::ScenarioEventEndRound>(lua_tointeger(L, 4));
+            auto delay = static_cast<float>(lua_tonumber(L, 5));
+            hook->callNext(winStatus, event, delay);
+            break;
+        }
+        case GameHooks::OnFreezeEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                return 0;
+            }
+
+            auto hook = reinterpret_cast<Anubis::Game::CStrike::IRoundFreezeEndHook *>(lua_touserdata(L, 2));
+            hook->callNext();
+            break;
+        }
 
         default:
             break;
@@ -117,7 +141,32 @@ static int callOriginal(lua_State *L)
             auto hook = reinterpret_cast<Anubis::Game::IClientInfoChangedHook *>(lua_touserdata(L, 2));
             auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 3));
             auto infoBuffer = reinterpret_cast<Anubis::Engine::InfoBuffer *>(lua_touserdata(L, 4));
-            hook->callNext(edict, *infoBuffer);
+            hook->callOriginal(edict, *infoBuffer);
+            break;
+        }
+        case GameHooks::RoundEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                return 0;
+            }
+
+            auto hook = reinterpret_cast<Anubis::Game::CStrike::IRoundEndHook *>(lua_touserdata(L, 2));
+            auto winStatus = static_cast<Anubis::Game::CStrike::WinStatus>(lua_tointeger(L, 3));
+            auto event = static_cast<Anubis::Game::CStrike::ScenarioEventEndRound>(lua_tointeger(L, 4));
+            auto delay = static_cast<float>(lua_tonumber(L, 5));
+            hook->callOriginal(winStatus, event, delay);
+            break;
+        }
+        case GameHooks::OnFreezeEnd:
+        {
+            if (!gGame->getHooks()->CSHooks())
+            {
+                return 0;
+            }
+
+            auto hook = reinterpret_cast<Anubis::Game::CStrike::IRoundFreezeEndHook *>(lua_touserdata(L, 2));
+            hook->callOriginal();
             break;
         }
 
@@ -503,6 +552,81 @@ static int execFunc(lua_State *L)
     return 0;
 }
 
+static int createTimer(lua_State *L)
+{
+    std::size_t length;
+    auto interval = static_cast<float>(lua_tonumber(L, 1));
+    const char *fnName = luaL_checklstring(L, 2, &length);
+    std::any data;
+    auto repeat = static_cast<bool>(lua_toboolean(L, 4));
+    auto execNow = static_cast<bool>(lua_toboolean(L, 5));
+
+    switch (lua_type(L, 3))
+    {
+        case LUA_TBOOLEAN:
+        {
+            data = static_cast<bool>(lua_toboolean(L, 3));
+            break;
+        }
+        case LUA_TNUMBER:
+        {
+            data = lua_tonumber(L, 3);
+            break;
+        }
+        case LUA_TSTRING:
+        {
+            std::string tempData;
+            size_t len;
+
+            const char *str = lua_tolstring(L, 3, &len);
+            tempData = str;
+
+            data = std::move(tempData);
+            break;
+        }
+        default:
+            break;
+    }
+
+    std::string fName {fnName};
+
+    gTimers.emplace_back(interval, [L, fName](std::any data) {
+         if (lua_getglobal(L, fName.c_str()) == LUA_TNIL)
+         {
+             return false;
+         }
+
+         if (data.type() == typeid(bool))
+         {
+             lua_pushboolean(L, std::any_cast<bool>(data));
+         }
+         else if (data.type() == typeid(double))
+         {
+             lua_pushnumber(L, std::any_cast<double>(data));
+         }
+         else if (data.type() == typeid(std::string))
+         {
+             lua_pushstring(L, std::any_cast<std::string>(data).c_str());
+         }
+         else
+         {
+             lua_pushnil(L);
+         }
+
+         if (lua_pcall(L, 1, 1, 0) != LUA_OK)
+         {
+             return false;
+         }
+
+         auto result = static_cast<bool>(lua_toboolean(L, -1));
+         lua_pop(L, 1);
+
+         return result;
+    }, std::move(data), repeat, execNow);
+
+    return 0;
+}
+
 LuaAdapterCFunction gBasicNatives[] = {
     {"enginePrint", enginePrint},
     {"gameFnHook", gameFnHook},
@@ -517,5 +641,6 @@ LuaAdapterCFunction gBasicNatives[] = {
     {"infoKeyValue", infoKeyValue},
     {"clientPrint", clientPrint},
     {"execFunc", execFunc},
+    {"createTimer", createTimer},
     {nullptr, nullptr}
 };

@@ -20,6 +20,8 @@
 #include "AnubisExports.hpp"
 #include "PluginSystem.hpp"
 #include "ExtSystem.hpp"
+#include "TimerSystem.hpp"
+#include "ConfigSystem.hpp"
 
 nstd::observer_ptr<Anubis::IAnubis> gAnubisApi;
 nstd::observer_ptr<Anubis::Game::ILibrary> gGame;
@@ -46,6 +48,24 @@ namespace
             gExtList.emplace_back(path);
         }
     }
+
+    void ServerFrame(const std::unique_ptr<Anubis::Game::IStartFrameHook> &hook)
+    {
+        hook->callNext();
+
+        for (auto it = gTimers.begin(); it != gTimers.end(); it++)
+        {
+            auto &timer = *it;
+            if (timer.getLastExec() + timer.getInterval() <= gEngine->getTime())
+            {
+                bool result = timer.exec();
+                if (!result)
+                {
+                    it = gTimers.erase(it);
+                }
+            }
+        }
+    }
 }
 
 namespace Anubis
@@ -68,10 +88,15 @@ namespace Anubis
         gGame = gAnubisApi->getGame(Game::ILibrary::VERSION);
         gEngine = gAnubisApi->getEngine(Engine::ILibrary::VERSION);
         gLogger->setLogTag("LUNA");
-        gLogger->setLogLevel(LogLevel::Debug);
+
+        std::filesystem::path cfgFile {gPluginInfo->getPath().parent_path().parent_path() / "configs" / "general.yaml"};
+        gConfig = std::make_unique<Luna::Config>(std::move(cfgFile));
+
+        gLogger->setLogLevel(static_cast<Anubis::LogLevel>(gConfig->getLogLevel()));
 
         loadExts();
-        gPluginSystem = std::make_unique<Luna::PluginSystem>();
+        gPluginSystem = std::make_unique<Luna::PluginSystem>(gConfig->getPluginsDirName());
+        gGame->getHooks()->startFrame()->registerHook(ServerFrame, Anubis::HookPriority::Default);
 
         return true;
     }
