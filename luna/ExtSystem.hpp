@@ -75,9 +75,9 @@ namespace Luna
         static constexpr std::string_view FnInitSgn = "";
         static constexpr std::string_view FnShutdownSgn = "?Shutdown@Luna@@YAXXZ";
 #else
-        static constexpr std::string_view FnQuerySgn = "_ZN6Luna5QueryEv";
+        static constexpr std::string_view FnQuerySgn = "_ZN4Luna5QueryEv";
         static constexpr std::string_view FnInitSgn = "_ZN4Luna4InitEOSt10unique_ptrIN6Anubis7ILoggerESt14default_deleteIS2_EE";
-        static constexpr std::string_view FnShutdownSgn = "_ZN6Luna8ShutdownEv";
+        static constexpr std::string_view FnShutdownSgn = "_ZN4Luna8ShutdownEv";
 #endif
 
     private:

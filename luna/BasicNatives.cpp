@@ -502,8 +502,6 @@ static int execFunc(lua_State *L)
     size_t length;
     const char *name = luaL_checklstring(L, 1, &length);
 
-    lua_pop(L, 1);
-
     int paramsNum = lua_gettop(L);
 
     for (const auto &plugin : gPluginSystem->getPlugins())
@@ -515,7 +513,7 @@ static int execFunc(lua_State *L)
             continue;
         }
 
-        for (int i = 1; i <= paramsNum; i++)
+        for (int i = 2; i <= paramsNum; i++)
         {
             switch (lua_type(L, i))
             {
@@ -546,7 +544,7 @@ static int execFunc(lua_State *L)
             }
         }
 
-        lua_pcall(otherPl, paramsNum, 0, 0);
+        lua_pcall(otherPl, paramsNum - 1, 0, 0);
     }
 
     return 0;

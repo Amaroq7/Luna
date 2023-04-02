@@ -467,6 +467,15 @@ static int setSpawnFlag(lua_State *L)
     return 0;
 }
 
+static int setRenderEffects(lua_State *L)
+{
+    auto edict = reinterpret_cast<Anubis::Engine::IEdict *>(lua_touserdata(L, 1));
+    auto value = static_cast<Anubis::Engine::IEdict::RenderFx>(luaL_checkinteger(L, 2));
+
+    edict->setRenderEffects(value);
+    return 0;
+}
+
 LuaAdapterCFunction gEdictNatives[] = {
     {"setModel", setModel},
     {"setOrigin", setOrigin},
@@ -513,6 +522,7 @@ LuaAdapterCFunction gEdictNatives[] = {
     {"setRenderMode", setRenderMode},
     {"setDeadFlag", setDeadFlag},
     {"setSpawnFlag", setSpawnFlag},
+    {"setRenderEffects", setRenderEffects},
 
     {nullptr, nullptr}
 };

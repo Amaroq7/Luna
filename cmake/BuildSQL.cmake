@@ -33,8 +33,9 @@ else ()
     target_compile_options(mariadbcpp PRIVATE /wd4251 /wd4275)
 endif ()
 
+set(SQL_MARIADB_LIB_DIR ${mariadbconnector_BINARY_DIR}/libmariadb/libmariadb)
 set(SQL_CPP_INCLUDE_DIR ${mariadbconnector_SOURCE_DIR}/include)
-set(SQL_CPP_LIBRARIES libmariadbcpp)
+set(SQL_CPP_LIBRARIES mariadbcpp)
 
 set_target_properties(mariadbcpp
         PROPERTIES

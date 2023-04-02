@@ -60,6 +60,10 @@ set_target_properties(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME} PRIVATE ${FMT_LIBRARIES})
 add_dependencies(${PROJECT_NAME} ${FMT_LIBRARIES})
 
+target_link_directories(${PROJECT_NAME} PRIVATE ${SQL_MARIADB_LIB_DIR})
+target_link_libraries(${PROJECT_NAME} PRIVATE ${SQL_CPP_LIBRARIES})
+add_dependencies(${PROJECT_NAME} mariadbcpp)
+
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin/dlls
         LIBRARY DESTINATION bin/dlls
